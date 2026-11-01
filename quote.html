@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KI Events Rental Quotation</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f4f8;
+      margin: 20px;
+      color: #333;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px;
+    }
+
+    header h1 {
+      font-size: 2em;
+      margin: 0;
+      color: #2c3e50;
+    }
+
+    #itemsContainer {
+      margin-top: 30px;
+    }
+
+    .item-card {
+      background: #fff;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    select,
+    .item-card input[type="number"] {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      flex: 1;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: opacity 0.3s;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    #addBtn {
+      background-color: #27ae60;
+      color: #fff;
+    }
+
+    #calcBtn {
+      background-color: #2980b9;
+      color: #fff;
+    }
+
+    #feesContainer {
+      margin-top: 20px;
+    }
+
+    .fee-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .fee-row input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 120px;
+    }
+
+    #total {
+      margin-top: 30px;
+      background: #dfe6e9;
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 1.5em;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .item-card {
+        flex-wrap: wrap;
+      }
+
+      .item-card select,
+      .item-card input[type="number"] {
+        min-width: 120px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>KI Events Rental Quotation</h1>
+    <p>Get instant quotes in just a few clicks!</p>
+  </header>
+
+  <div id="itemsContainer"></div>
+
+  <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+    <button id="addBtn" class="btn" type="button" onclick="addItem()">
+      Add Item
+    </button>
+    <button id="calcBtn" class="btn" type="button" onclick="calculateTotal()">
+      Calculate Total
+    </button>
+  </div>
+
+  <div id="feesContainer">
+    <div class="fee-row">
+      <label for="deliveryFee"><strong>Delivery &amp; Return Fee:</strong></label>
+      <span>₱</span>
+      <input type="number" id="deliveryFee" min="0" value="0" />
+    </div>
+
+    <div class="fee-row">
+      <label for="serviceFee"><strong>Service / Labor Set-up Fee:</strong></label>
+      <span>₱</span>
+      <input type="number" id="serviceFee" min="0" value="0" />
+    </div>
+  </div>
+
+    <div class="fee-row">
+      <label for="backdropFee"><strong>Backdrop Design Set-up Fee:</strong></label>
+      <span>₱</span>
+      <input type="number" id="backdropFee" min="0" value="0" />
+    </div>
+  </div>
+
+  <div id="total">Total: ₱0.00</div>
+
+  <script>
+    const catalog = [
+      { name: "Set A", price: 700 },
+      { name: "Set B", price: 1050 },
+      { name: "Set C", price: 1400 },
+      { name: "Set D", price: 1760 },
+      { name: "Monoblocks Chair", price: 15 },
+      { name: "Chair Cover", price: 15 },
+      { name: "Long Table 4ft", price: 130 },
+      { name: "Long Table Cover 4ft", price: 35 },
+      { name: "Long Table 6ft", price: 170 },
+      { name: "Long Table Cover 6ft", price: 45 },
+      { name: "Round Table Cover", price: 55 },
+      { name: "8 Seater - Round Table with Cover", price: 280 },
+      { name: "10 Seater - Round Table with Cover", price: 350 },
+      { name: "Runners", price: 20 },
+      { name: "Chair Ribbon", price: 20 },
+      { name: "Toppers", price: 50 },
+      { name: "Centerpiece", price: 30 },
+      { name: "Kiddie Set", price: 380 },
+      { name: "Kiddie Tables", price: 150 },
+      { name: "Kiddie Table Cover", price: 30 },
+      { name: "Kiddie Chair", price: 30 },
+      { name: "Chaffing Dish/Foodwarmer", price: 350 },
+      { name: "Videoke - Set A (Basic)", price: 1199 },
+      { name: "Videoke - Set B (Modern)", price: 1599 },
+      { name: "Videoke - Set C (Premium)", price: 2099 },
+      { name: "Tent 3mx4.5m", price: 700 },
+      { name: "Tent 4mx6m", price: 950 },
+      { name: "Tent Side Cover", price: 50 }
+    ];
+
+    function createItemCard() {
+      const card = document.createElement("div");
+      card.className = "item-card";
+
+      const select = document.createElement("select");
+
+      const defaultOption = document.createElement("option");
+      defaultOption.textContent = "-- Select an item --";
+      defaultOption.disabled = true;
+      defaultOption.selected = true;
+      defaultOption.value = "";
+      select.appendChild(defaultOption);
+
+      catalog.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.price;
+        option.textContent = `${item.name} (₱${item.price})`;
+        select.appendChild(option);
+      });
+
+      const quantity = document.createElement("input");
+      quantity.type = "number";
+      quantity.min = "1";
+      quantity.value = "1";
+      quantity.setAttribute("aria-label", "Quantity");
+
+      const removeButton = document.createElement("button");
+      removeButton.type = "button";
+      removeButton.textContent = "Remove";
+      removeButton.className = "btn";
+      removeButton.style.backgroundColor = "#FFCCCB";
+      removeButton.onclick = () => card.remove();
+
+      card.appendChild(select);
+      card.appendChild(quantity);
+      card.appendChild(removeButton);
+
+      return card;
+    }
+
+    function addItem() {
+      document
+        .getElementById("itemsContainer")
+        .appendChild(createItemCard());
+    }
+
+    function calculateTotal() {
+      let itemsTotal = 0;
+
+      document.querySelectorAll(".item-card").forEach(row => {
+        const select = row.querySelector("select");
+        const quantityInput = row.querySelector('input[type="number"]');
+        const price = parseFloat(select.value) || 0;
+        const quantity = parseInt(quantityInput.value, 10) || 0;
+
+        if (select.value && quantity > 0) {
+          itemsTotal += price * quantity;
+        }
+      });
+
+      const deliveryFee =
+        parseFloat(document.getElementById("deliveryFee").value) || 0;
+      const serviceFee =
+        parseFloat(document.getElementById("serviceFee").value) || 0;
+      const backdropFee =
+        parseFloat(document.getElementById("backdropFee").value) || 0; 
+
+      const total = itemsTotal + deliveryFee + serviceFee +backdropFee;
+
+      document.getElementById("total").textContent =
+        `Total: ₱${total.toFixed(2)}`;
+    }
+
+    window.onload = addItem;
+  </script>
+</body>
+</html>
